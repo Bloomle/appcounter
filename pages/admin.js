@@ -106,15 +106,6 @@ async function login() {
       Alles zurücksetzen
     </button>
 
-      <p className="mb-2 font-semibold">Gesamt: {data.total}</p>
-
-      <button
-        onClick={reset}
-        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded mb-6"
-      >
-        Alles zurücksetzen
-      </button>
-
       <table className="min-w-full border">
         <thead>
           <tr className="bg-gray-100 border-b">
