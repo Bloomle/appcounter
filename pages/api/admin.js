@@ -12,7 +12,8 @@ function writeData(data) {
 }
 
 export default function handler(req, res) {
-  const { password } = req.body || req.query;
+ const password =
+  req.method === "GET" ? req.query.password : req.body?.password;
 
   if (password !== process.env.ADMIN_PASSWORD) {
     return res.status(401).json({ error: "Wrong password" });
