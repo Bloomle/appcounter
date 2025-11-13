@@ -9,21 +9,18 @@ export default function Admin() {
   const [editCount, setEditCount] = useState("");
 
   // 🔑 Login & Daten laden
-  async function login() {
-    const res = await fetch("/api/admin", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
-    });
-    if (res.ok) {
-      const dataRes = await fetch(`/api/admin?password=${password}`);
-      const result = await dataRes.json();
-      setData(result);
-    } else {
-      const result = await res.json();
-      setError(result.error);
-    }
+async function login() {
+  const res = await fetch(`/api/admin?password=${password}`);
+  if (res.ok) {
+    const result = await res.json();
+    setData(result);
+    setError("");
+  } else {
+    const result = await res.json();
+    setError(result.error);
   }
+}
+
 
   async function reload() {
     const res = await fetch(`/api/admin?password=${password}`);
