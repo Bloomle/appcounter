@@ -85,7 +85,6 @@ async function login() {
     );
 
   return (
-    return (
   <div className="p-8">
     {/* 🔙 Zurück-Button */}
     <div className="flex justify-between items-center mb-4">
