@@ -85,8 +85,28 @@ async function login() {
     );
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl mb-4 text-blue-500">Admin Dashboard</h1>
+    return (
+  <div className="p-8">
+    {/* 🔙 Zurück-Button */}
+    <div className="flex justify-between items-center mb-4">
+      <h1 className="text-2xl text-blue-500">Admin Dashboard</h1>
+      <button
+        onClick={() => (window.location.href = "/")}
+        className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded"
+      >
+        ← Zurück zur Hauptseite
+      </button>
+    </div>
+
+    <p className="mb-2 font-semibold">Gesamt: {data.total}</p>
+
+    <button
+      onClick={reset}
+      className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded mb-6"
+    >
+      Alles zurücksetzen
+    </button>
+
       <p className="mb-2 font-semibold">Gesamt: {data.total}</p>
 
       <button
