@@ -1,19 +1,34 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Admin() {
   const [password, setPassword] = useState("");
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
+  const [editing, setEditing] = useState(null);
+  const [editName, setEditName] = useState("");
+  const [editCount, setEditCount] = useState("");
 
+  // 🔑 Login & Daten laden
   async function login() {
     const res = await fetch("/api/admin", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ password }),
     });
+    if (res.ok) {
+      const dataRes = await fetch(`/api/admin?password=${password}`);
+      const result = await dataRes.json();
+      setData(result);
+    } else {
+      const result = await res.json();
+      setError(result.error);
+    }
+  }
+
+  async function reload() {
+    const res = await fetch(`/api/admin?password=${password}`);
     const result = await res.json();
-    if (res.ok) setData(result);
-    else setError(result.error);
+    setData(result);
   }
 
   async function reset() {
@@ -22,7 +37,33 @@ export default function Admin() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ password, action: "reset" }),
     });
-    setData({ total: 0, votes: [] });
+    reload();
+  }
+
+  // 🗑️ Stimme löschen
+  async function deleteVote(name) {
+    await fetch("/api/admin", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password, name }),
+    });
+    reload();
+  }
+
+  // ✏️ Stimme bearbeiten
+  async function saveEdit() {
+    await fetch("/api/admin", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        password,
+        oldName: editing,
+        newName: editName,
+        newCount: editCount,
+      }),
+    });
+    setEditing(null);
+    reload();
   }
 
   if (!data)
@@ -49,20 +90,94 @@ export default function Admin() {
   return (
     <div className="p-8">
       <h1 className="text-2xl mb-4 text-blue-500">Admin Dashboard</h1>
-      <p className="mb-2">Gesamt: {data.total}</p>
+      <p className="mb-2 font-semibold">Gesamt: {data.total}</p>
+
       <button
         onClick={reset}
-        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded mb-4"
+        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded mb-6"
       >
-        Reset
+        Alles zurücksetzen
       </button>
-      <ul>
-        {data.votes.map((v, i) => (
-          <li key={i}>
-            {v.name} (+{v.count}) — {new Date(v.date).toLocaleString()}
-          </li>
-        ))}
-      </ul>
+
+      <table className="min-w-full border">
+        <thead>
+          <tr className="bg-gray-100 border-b">
+            <th className="p-2 text-left">Name</th>
+            <th className="p-2 text-left">Personen</th>
+            <th className="p-2 text-left">Datum</th>
+            <th className="p-2 text-left">Aktionen</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.votes.map((v, i) => (
+            <tr key={i} className="border-b">
+              <td className="p-2">
+                {editing === v.name ? (
+                  <input
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    className="border rounded p-1"
+                  />
+                ) : (
+                  v.name
+                )}
+              </td>
+              <td className="p-2">
+                {editing === v.name ? (
+                  <input
+                    type="number"
+                    value={editCount}
+                    onChange={(e) => setEditCount(e.target.value)}
+                    className="border rounded p-1 w-16"
+                  />
+                ) : (
+                  v.count
+                )}
+              </td>
+              <td className="p-2">
+                {new Date(v.date).toLocaleString("de-DE")}
+              </td>
+              <td className="p-2 flex gap-2">
+                {editing === v.name ? (
+                  <>
+                    <button
+                      onClick={saveEdit}
+                      className="bg-green-500 text-white px-2 py-1 rounded"
+                    >
+                      Speichern
+                    </button>
+                    <button
+                      onClick={() => setEditing(null)}
+                      className="bg-gray-400 text-white px-2 py-1 rounded"
+                    >
+                      Abbrechen
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => {
+                        setEditing(v.name);
+                        setEditName(v.name);
+                        setEditCount(v.count);
+                      }}
+                      className="bg-blue-500 text-white px-2 py-1 rounded"
+                    >
+                      Bearbeiten
+                    </button>
+                    <button
+                      onClick={() => deleteVote(v.name)}
+                      className="bg-red-500 text-white px-2 py-1 rounded"
+                    >
+                      Löschen
+                    </button>
+                  </>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
